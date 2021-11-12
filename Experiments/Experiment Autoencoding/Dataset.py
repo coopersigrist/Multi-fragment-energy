@@ -1,5 +1,4 @@
 from torch_geometric.datasets import QM9
-from torch_geometric.utils import train_test_split_edges
 import torch
 import torch_geometric.transforms as T
 from torch_geometric.nn import GCNConv
@@ -10,11 +9,9 @@ dataset = QM9(root="tmp/QM9")
 
 # 130,831 graphs are in the QM9 dataset
 num_of_graphs = len(dataset)
-print("Number of graphs in QM9:", num_of_graphs)
 
+print("Number of graphs in QM9:", num_of_graphs)
 # defining some variables for training the model
-num_features = dataset.num_features
-epochs = 50
 
 '''implementations for the graph autoencoder
    first we define the encoder we are using '''
@@ -31,5 +28,9 @@ class GCNEncoder(torch.nn.Module):
         return self.conv2(x, edge_index)
 
 
+num_features = dataset.num_features
+encoder_out = 2
+epochs = 50
+
 # define the graph autoencoder
-model = GAE(GCNEncoder(num_features, num_features))
+model = GAE(GCNEncoder(num_features, encoder_out))
