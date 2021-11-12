@@ -62,4 +62,7 @@ def train():
         optimizer.zero_grad()
         print(float(loss))
 
-train()
+
+# iterating over the epochs
+for epoch in range(1, epochs+1):
+    train()
