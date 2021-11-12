@@ -3,19 +3,30 @@ import torch
 import torch_geometric.transforms as T
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn import GAE
-
+from torch_geometric.loader import DataLoader
+import math
 # loading the QM9 dataset
 dataset = QM9(root="tmp/QM9")
+print(dataset)
 
 # 130,831 graphs are in the QM9 dataset
 num_of_graphs = len(dataset)
+train_idx = math.floor(0.80 * num_of_graphs)
 
-print("Number of graphs in QM9:", num_of_graphs)
-# defining some variables for training the model
+# shuffling the dataset
+torch.manual_seed(7869)
+dataset.shuffle()
+
+# splitting into training and testing sets
+train_dataset = dataset[:train_idx]
+test_dataset = dataset[train_idx:]
+
+# training and testing loaders
+train_loader = DataLoader(train_dataset, batch_size=32)
+test_loader = DataLoader(test_dataset, batch_size=32)
 
 '''implementations for the graph autoencoder
    first we define the encoder we are using '''
-
 
 class GCNEncoder(torch.nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -28,6 +39,7 @@ class GCNEncoder(torch.nn.Module):
         return self.conv2(x, edge_index)
 
 
+# defining some variables for training the model
 num_features = dataset.num_features
 encoder_out = 2
 epochs = 50
