@@ -1,5 +1,4 @@
 # Will hold the code for the model code, will move to here in the future
-from torch_geometric.datasets import QM9
 import torch
 from torch_geometric.nn import GAE, GCNConv
 

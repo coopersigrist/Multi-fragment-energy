@@ -28,8 +28,8 @@ test_loader = DataLoader(test_dataset, batch_size=32)
 
 # defining some variables for training the model
 num_features = dataset.num_features
-encoder_out = 32
-epochs = 50
+encoder_out = 8
+epochs = 5
 
 # define the graph autoencoder
 model = build_model(num_features, encoder_out)
@@ -64,7 +64,24 @@ def train():
     return np.sum(loss_history) / len(loss_history)
 
 
+# testing the model, very similar to train, but the gradients don't update
+def test():
+    model.eval()
+    loss_history = []
+    for data in test_loader:
+        with torch.no_grad():
+            x = data.x.to(device)
+            edge_index = data.edge_index.to(device)
+            z = model.encode(x, edge_index)
+            loss = model.recon_loss(z, edge_index)
+            loss_history.append(loss)
+    return np.sum(loss_history) / len(loss_history)
+
+
 # iterating over the epochs
 for epoch in range(1, epochs+1):
-    l = train()
-    print("Epoch {}: Reconstruction loss {}".format(epoch, l))
+    train_loss = train()
+    print("Epoch {}: reconstruction loss {}".format(epoch, train_loss))
+
+test_loss = test()
+print("Test reconstruction loss", test_loss)
