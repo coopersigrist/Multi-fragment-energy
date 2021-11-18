@@ -2,13 +2,15 @@ from torch_geometric.datasets import QM9
 import torch
 from torch.optim import Adam
 from torch_geometric.loader import DataLoader
+from torch_geometric.transforms import NormalizeFeatures
 from torch_geometric.utils import train_test_split_edges
 import numpy as np
 import math
 from GAE import build_model
+import matplotlib.pyplot as plt
 
 # loading the QM9 dataset
-dataset = QM9(root="tmp/QM9")
+dataset = QM9(root="tmp/QM9", transform=NormalizeFeatures())
 
 # 130,831 graphs are in the QM9 dataset
 num_of_graphs = len(dataset)
@@ -29,13 +31,13 @@ test_loader = DataLoader(test_dataset, batch_size=32)
 # defining some variables for training the model
 num_features = dataset.num_features
 encoder_out = 8
-epochs = 5
+epochs = 15
 
 # define the graph autoencoder
 model = build_model(num_features, encoder_out)
 
 # defining the optimizer
-optimizer = Adam(model.parameters(), lr=0.01)
+optimizer = Adam(model.parameters(), lr=0.001)
 
 # GPU acceleration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -78,10 +80,19 @@ def test():
     return np.sum(loss_history) / len(loss_history)
 
 
+recon_loss_history = []
 # iterating over the epochs
 for epoch in range(1, epochs+1):
     train_loss = train()
+    recon_loss_history.append(train_loss)
     print("Epoch {}: reconstruction loss {}".format(epoch, train_loss))
 
 test_loss = test()
 print("Test reconstruction loss", test_loss)
+
+# plotting the reconstruction loss
+plt.plot(recon_loss_history)
+plt.title("Reconstruction Loss Over the Epochs")
+plt.xlabel("Number of epochs")
+plt.ylabel("Reconstruction loss")
+plt.show()
