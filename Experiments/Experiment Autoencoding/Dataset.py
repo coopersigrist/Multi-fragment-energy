@@ -30,8 +30,8 @@ test_loader = DataLoader(test_dataset, batch_size=32)
 
 # defining some variables for training the model
 num_features = dataset.num_features
-encoder_out = 8
-epochs = 15
+encoder_out = 32
+epochs = 3
 
 # define the graph autoencoder
 model = build_model(num_features, encoder_out)
@@ -46,10 +46,10 @@ model = model.to(device)
 # training the model
 def train():
     model.train()
-    for data in train_loader:
-        # we keep track of all the reconstruction loss
-        loss_history = []
+    # we keep track of all the reconstruction loss
+    loss_history = []
 
+    for data in train_loader:
         # speed up the computation
         x = data.x.to(device)
         edge_index = data.edge_index.to(device)
@@ -67,6 +67,7 @@ def train():
 
 
 # testing the model, very similar to train, but the gradients don't update
+# predictions = []
 def test():
     model.eval()
     loss_history = []
@@ -75,6 +76,15 @@ def test():
             x = data.x.to(device)
             edge_index = data.edge_index.to(device)
             z = model.encode(x, edge_index)
+            o = model.decode(z, edge_index)
+
+            # printing out the output
+            print("Input")
+            print(data)
+            print("Output")
+            print(o)
+
+            # predictions.append(o)
             loss = model.recon_loss(z, edge_index)
             loss_history.append(loss)
     return np.sum(loss_history) / len(loss_history)
