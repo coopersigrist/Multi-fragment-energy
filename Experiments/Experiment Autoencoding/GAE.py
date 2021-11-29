@@ -16,5 +16,6 @@ class GCNEncoder(torch.nn.Module):
 
 # define the GAE model
 def build_model(encoder_in, encoder_out):
+    # should use the default decoder provided by pytorch geometric 
     model = GAE(GCNEncoder(encoder_in, encoder_out), None)
     return model

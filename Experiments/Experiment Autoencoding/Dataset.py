@@ -31,13 +31,13 @@ test_loader = DataLoader(test_dataset, batch_size=32)
 # defining some variables for training the model
 num_features = dataset.num_features
 encoder_out = 32
-epochs = 3
+epochs = 10
 
 # define the graph autoencoder
 model = build_model(num_features, encoder_out)
 
 # defining the optimizer
-optimizer = Adam(model.parameters(), lr=0.001)
+optimizer = Adam(model.parameters(), lr=0.0001)
 
 # GPU acceleration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
