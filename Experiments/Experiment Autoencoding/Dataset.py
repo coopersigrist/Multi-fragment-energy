@@ -29,8 +29,8 @@ test_loader = DataLoader(test_dataset, batch_size=16)
 
 # defining some variables for training the model
 num_features = dataset.num_features
-encoder_out = 32
-epochs = 20
+encoder_out = 64
+epochs = 25
 
 # define the graph autoencoder
 model = build_model(num_features, encoder_out)
@@ -93,6 +93,7 @@ for epoch in range(1, epochs+1):
 
     # if the model is no longer improving, stop the training
     if es.step(train_loss):
+        print("Early Stop")
         break
 
     # store the train and test reconstruction loss so we can visualize later
@@ -103,4 +104,4 @@ for epoch in range(1, epochs+1):
 
 # visualization!!!
 plot_epochs_history(train_loss_history, "Train Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
-plot_epochs_history(train_loss_history, "Test Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
+plot_epochs_history(test_loss_history, "Test Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
