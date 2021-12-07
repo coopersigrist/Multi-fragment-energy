@@ -6,6 +6,7 @@ import numpy as np
 import math
 from GAE import build_model
 from Utils import plot_epochs_history
+from early_stopping import EarlyStopping
 
 # loading the QM9 dataset
 dataset = QM9(root="tmp/QM9")
@@ -29,7 +30,7 @@ test_loader = DataLoader(test_dataset, batch_size=16)
 # defining some variables for training the model
 num_features = dataset.num_features
 encoder_out = 32
-epochs = 10
+epochs = 20
 
 # define the graph autoencoder
 model = build_model(num_features, encoder_out)
@@ -81,12 +82,18 @@ def test(loader):
 train_loss_history = []
 test_loss_history = []
 
+# define the early stop
+es = EarlyStopping(patience=3)
 
 # iterating over the epochs
 for epoch in range(1, epochs+1):
     train()
     train_loss = test(train_loader)
     test_loss = test(test_loader)
+
+    # if the model is no longer improving, stop the training
+    if es.step(train_loss):
+        break
 
     # store the train and test reconstruction loss so we can visualize later
     train_loss_history.append(train_loss)
