@@ -16,34 +16,34 @@ num_of_graphs = len(dataset)
 train_idx = math.floor(0.80 * num_of_graphs)
 
 # shuffling the dataset
-torch.manual_seed(7869)
-dataset.shuffle()
+torch.manual_seed(123)
+dataset = dataset.shuffle()
 
 # splitting into training and testing sets
 train_dataset = dataset[:train_idx]
 test_dataset = dataset[train_idx:]
 
 # training and testing loaders
-train_loader = DataLoader(train_dataset, batch_size=16)
-test_loader = DataLoader(test_dataset, batch_size=16)
+batch_size = 32
+train_loader = DataLoader(train_dataset, batch_size=batch_size)
+test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
 # defining some variables for training the model
 num_features = dataset.num_features
-encoder_out = 64
+
 epochs = 25
 
 # define the graph autoencoder
-model = build_model(num_features, encoder_out)
+model = build_model(num_features, num_features)
 
 # defining the optimizer
-optimizer = Adam(model.parameters(), lr=0.001)
+optimizer = Adam(model.parameters(), lr=0.01)
 
 # GPU acceleration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = model.to(device)
 
 # training the model
-
 
 def train():
     model.train()
