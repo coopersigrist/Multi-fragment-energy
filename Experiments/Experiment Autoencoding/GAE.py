@@ -4,6 +4,7 @@ from torch_geometric.nn import GAE, GCNConv
 
 # define the encoder
 
+
 class GCNEncoder(torch.nn.Module):
     def __init__(self, in_channels, out_channels):
         super(GCNEncoder, self).__init__()

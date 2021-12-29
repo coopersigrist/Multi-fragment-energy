@@ -4,6 +4,10 @@ from torch.optim import Adam
 from torch_geometric.loader import DataLoader
 import numpy as np
 import math
+import networkx as nx
+from torch_geometric.utils import to_networkx
+from torch_geometric.data import Data
+import matplotlib.pyplot as plt
 from GAE import build_model
 from Utils import plot_epochs_history
 from early_stopping import EarlyStopping
@@ -79,6 +83,7 @@ def test(loader):
     return np.sum(loss_history) / len(loader.dataset)
 
 
+# plot training and testing loss over the epochs
 train_loss_history = []
 test_loss_history = []
 
@@ -105,3 +110,37 @@ for epoch in range(1, epochs+1):
 # visualization!!!
 plot_epochs_history(train_loss_history, "Train Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
 plot_epochs_history(test_loss_history, "Test Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
+
+# seeing output info, since there seems a bug
+model.eval()
+# extracting graphs from the batched large graph
+for data in test_loader:
+    with torch.no_grad():
+        for i in range(3):
+            # original graph info
+            graph = data.get_example(i)
+            x = graph.x.to(device)
+            edge_index = graph.edge_index.to(device)
+
+            # computing latent representation (nodes) and adjacent matrix
+            z = model.encode(x, edge_index)
+            # prob_edges = model.decode(z, edge_index)
+            adj = model.decoder.forward_all(z, sigmoid=True)
+            # sparsify the adjacent matrix into shape [2, num_nodes]
+            o_edge_index = (adj > 0.8).nonzero(as_tuple=False).t()
+            output = Data(x=z, edge_index=o_edge_index)
+            print("Graph", i)
+
+            g = to_networkx(graph, to_undirected=True)
+            nx.draw(g)
+            plt.show()
+
+            n = to_networkx(output, to_undirected=True)
+            nx.draw(n)
+            plt.show()
+
+            # z = model.encode(graph.x, graph.edge_index)
+            # edge_prob = model.decode(z, graph.edge_index)
+        break
+
+
