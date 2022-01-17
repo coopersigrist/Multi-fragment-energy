@@ -15,17 +15,17 @@ from early_stopping import EarlyStopping
 # loading the QM9 dataset
 dataset = QM9(root="tmp/QM9")
 
-# 130,831 graphs are in the QM9 dataset
-num_of_graphs = len(dataset)
-train_idx = math.floor(0.80 * num_of_graphs)
-
 # shuffling the dataset
 torch.manual_seed(123)
 dataset = dataset.shuffle()
 
+# 130,831 graphs are in the QM9 dataset, but we're using 3000
+num_of_graphs = 3000
+train_idx = math.floor(0.80 * num_of_graphs)
+
 # splitting into training and testing sets
 train_dataset = dataset[:train_idx]
-test_dataset = dataset[train_idx:]
+test_dataset = dataset[train_idx:num_of_graphs]
 
 # training and testing loaders
 batch_size = 32
@@ -35,13 +35,13 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size)
 # defining some variables for training the model
 num_features = dataset.num_features
 
-epochs = 25
+epochs = 100
 
 # define the graph autoencoder
 model = build_model(num_features, num_features)
 
 # defining the optimizer
-optimizer = Adam(model.parameters(), lr=0.01)
+optimizer = Adam(model.parameters(), lr=0.001)
 
 # GPU acceleration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -111,36 +111,7 @@ for epoch in range(1, epochs+1):
 plot_epochs_history(train_loss_history, "Train Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
 plot_epochs_history(test_loss_history, "Test Reconstruction Loss over Time", "Epochs", "Reconstruction Loss")
 
-# seeing output info, since there seems a bug
 model.eval()
-# extracting graphs from the batched large graph
-for data in test_loader:
-    with torch.no_grad():
-        for i in range(3):
-            # original graph info
-            graph = data.get_example(i)
-            x = graph.x.to(device)
-            edge_index = graph.edge_index.to(device)
 
-            # computing latent representation (nodes) and adjacent matrix
-            z = model.encode(x, edge_index)
-            # prob_edges = model.decode(z, edge_index)
-            adj = model.decoder.forward_all(z, sigmoid=True)
-            # sparsify the adjacent matrix into shape [2, num_nodes]
-            o_edge_index = (adj > 0.8).nonzero(as_tuple=False).t()
-            output = Data(x=z, edge_index=o_edge_index)
-            print("Graph", i)
-
-            g = to_networkx(graph, to_undirected=True)
-            nx.draw(g)
-            plt.show()
-
-            n = to_networkx(output, to_undirected=True)
-            nx.draw(n)
-            plt.show()
-
-            # z = model.encode(graph.x, graph.edge_index)
-            # edge_prob = model.decode(z, graph.edge_index)
-        break
 
 
